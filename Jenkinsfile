@@ -7,6 +7,12 @@ pipeline {
       }
     
     }
+    stage('echo msg') {
+      steps {
+        echo "Inside echo msg"
+      }
+    
+    }
 
   }
 }
