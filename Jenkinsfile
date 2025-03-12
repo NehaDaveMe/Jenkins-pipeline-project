@@ -7,9 +7,12 @@ pipeline {
       }
     
     }
-    stage('echo msg') {
+    stage('validate the code') {
       steps {
-        echo "Inside echo msg"
+        withMaven(globalMavenSettingsConfig: '', jdk: 'JDK_HOME', maven: 'MVN_HOME', mavenSettingsConfig: '', traceability: true) {
+        sh 'mvn validate'
+}
+        //echo "Inside validate the code"
       }
     
     }
