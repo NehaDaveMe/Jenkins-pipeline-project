@@ -14,16 +14,16 @@ pipeline {
         sh 'mvn package'}
        
       }
-
+    }
     stage('deploy the code on tomcate server') {
       steps {
         sshagent(['dev']) {
         sh 'scp -o StrictHostKeyChecking=no webapp/target/webapp.war ec2-user@52.66.244.98:/usr/share/tomcat/webapps'
-}
+        }
       }
       }
       
     
     }
   }
-}
+
