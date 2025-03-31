@@ -3,34 +3,49 @@ pipeline {
   stages {
     stage('scm checkout') {
       steps {
-        git 'https://github.com/NehaDaveMe/Jenkins-pipeline-project.git'
+        git branch: 'master', url: 'https://github.com/NehaDaveMe/Jenkins-pipeline-project.git'
       }
-    
     }
 
 
-
-    stage('package the code') {
+    stage('compile the job') //validate then compile
+    {
       steps {
         withMaven(globalMavenSettingsConfig: '', jdk: 'JDK_HOME', maven: 'MVN_HOME', mavenSettingsConfig: '', traceability: true) {
-        
-        withSonarQubeEnv(credentialsId:'sonar_id',installationName:'sonar'){
-        sh 'mvn package sonar:sonar'
+          sh 'mvn compile'
         }
-        
-        }
-       
       }
     }
-    stage('deploy the code on tomcate server') {
+
+
+    stage('execute unit test framework') {
       steps {
-        sshagent(['dev']) {
-        sh 'scp -o StrictHostKeyChecking=no webapp/target/webapp.war ec2-user@52.66.244.98:/usr/share/tomcat/webapps'
+        withMaven(globalMavenSettingsConfig: '', jdk: 'JDK_HOME', maven: 'MVN_HOME', mavenSettingsConfig: '', traceability: true) {
+          sh 'mvn test'
         }
       }
+    }
+    stage('build the code') {
+      steps {
+        withMaven(globalMavenSettingsConfig: '', jdk: 'JDK_HOME', maven: 'MVN_HOME', mavenSettingsConfig: '', traceability: true) {
+          sh 'mvn clean package'
+        }
       }
-      
-    
+    }
+    stage('create docker image') {
+      steps {
+        sh 'docker build -t myimage:v1.0 .'
+      }
+    }
+    stage('push docker image to dockerhub') {
+      steps {
+        
+        withDockerRegistry(credentialsId: 'docker_token', url: 'https://hub.docker.com/repositories/nehadocker23') {
+            
+                sh 'docker push myimage:v1.0'
+            
+        }
+      }
     }
   }
-
+}
